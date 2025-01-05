@@ -1,8 +1,10 @@
 # streamfallback
 
-receives a Srt stream outputs to Rtmp (Twitch/Youtube) or Srt
+receives an Srt stream, outputs to Rtmp (Twitch/Youtube) or Srt
 
 if the Srt ingest fails or disconnects, it automatically switches to fallback videos. Instantly switches back if Srt comes back online - ideal for IRL streamers
+
+Works with hvec input, since we need reencoding anyway to properly switch to fallback videos
 
 for easy of use docker-compose:
 ```yml
