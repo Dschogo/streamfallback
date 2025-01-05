@@ -17,6 +17,3 @@ services:
     network_mode: host
     command: ["liquidsoap", "streaming.liq"]
 ```
-
-Todo:
-- use env for streamkey
