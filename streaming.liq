@@ -1,16 +1,20 @@
 #set("log.level", 4)
+# set all pipelines to defaults
+settings.frame.video.width := 1920
+settings.frame.video.height := 1080
+settings.frame.video.framerate := 25
 
 srtinput =
   input.srt(
-    port=6969,
+    port=1234,
     mode="listener",
-    streamid="somethingsomething"
+    streamid="something"
   )
 fallback_video = playlist(reload_mode="always", "slate/")
 
-e =
+enc =
   %ffmpeg(
-    format = "mpegts",
+    format = "flv",
     %audio(
       codec = "libfdk_aac",
       samplerate = 48000,
@@ -21,8 +25,9 @@ e =
     %video(
       codec = "libx264",
       b = "6000k",
-      preset = 4,
-      "x264-params" = "scenecut=0:open_gop=0:min-keyint=150:keyint=150",
+      preset = "fast",
+      "x264-params" =
+        "keyint=50:min-keyint=50:scenecut=0:vbv-bufsize=12000:vbv-maxrate=6000:bitrate=6000",
       video_size = "1920x1080",
       framerate = 25
     )
@@ -30,21 +35,28 @@ e =
 
 outputd = fallback(track_sensitive=false, [srtinput, fallback_video])
 
-output.srt(
-  mode="caller",
-  port=6420,
-  streamid="whatever",
-  e,
-  fallible=true,
-  outputd
-)
-
-
-# to twitch "stream url" would then be [Twitch ingest server url]/[stream key]
-# stream key is in environment variables
-# output.url(
-#   fallible=true,
-#   url="rtmp://live.twitch.tv/app/STREAMKEY",
+# output.srt(
+#   mode="caller",
+#   port=4321,
+#   streamid="something",
 #   enc,
+#   fallible=true,
 #   outputd
 # )
+
+TwitchStreamKey = getenv("", "TWITCH_STREAM_KEY")
+
+# print
+print(
+  "TwitchStreamKey: #{TwitchStreamKey}"
+)
+
+# if no key exit
+if TwitchStreamKey == "" then exit(2) end
+
+output.url(
+  fallible=true,
+  url="rtmp://live.twitch.tv/app/#{TwitchStreamKey}",
+  enc,
+  outputd
+)
